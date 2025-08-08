@@ -15,11 +15,8 @@ import {
   calculateLevel,
   getDropSpeed
 } from '@/utils/gameLogic';
-import { 
-  createTetromino, 
-  rotateTetromino, 
-  getRandomTetromino 
-} from '@/utils/tetrominos';
+import { createTetromino, rotateTetromino } from '@/utils/tetrominos';
+import { pieceGenerator } from '@/organisms/PieceGenerator';
 
 export function useGameLogic() {
   const [gameState, setGameState] = useState<GameState>(() => createInitialGameState());
@@ -101,7 +98,7 @@ export function useGameLogic() {
       const newScore = prevState.score + calculateScore(linesCleared, newLevel) + dropDistance * 2;
 
       const nextPiece = prevState.nextPieces[0];
-      const newNextPieces = [...prevState.nextPieces.slice(1), getRandomTetromino()];
+      const newNextPieces = [...prevState.nextPieces.slice(1), pieceGenerator.getNextPiece()];
       const newCurrentPiece = createTetromino(nextPiece);
 
       const gameOver = !isValidPosition(clearedBoard, newCurrentPiece);
@@ -140,7 +137,7 @@ export function useGameLogic() {
       } else {
         const nextPiece = prevState.nextPieces[0];
         newCurrentPiece = createTetromino(nextPiece);
-        newNextPieces = [...prevState.nextPieces.slice(1), getRandomTetromino()];
+        newNextPieces = [...prevState.nextPieces.slice(1), pieceGenerator.getNextPiece()];
         newHoldPiece = prevState.currentPiece.type;
       }
 
@@ -184,7 +181,7 @@ export function useGameLogic() {
       const newScore = prevState.score + calculateScore(linesCleared, newLevel);
 
       const nextPiece = prevState.nextPieces[0];
-      const newNextPieces = [...prevState.nextPieces.slice(1), getRandomTetromino()];
+      const newNextPieces = [...prevState.nextPieces.slice(1), pieceGenerator.getNextPiece()];
       const newCurrentPiece = createTetromino(nextPiece);
 
       const gameOver = !isValidPosition(clearedBoard, newCurrentPiece);
@@ -216,7 +213,7 @@ export function useGameLogic() {
     setGameState(prevState => {
       if (prevState.started) return prevState;
       const nextPiece = prevState.nextPieces[0];
-      const newNextPieces = [...prevState.nextPieces.slice(1), getRandomTetromino()];
+      const newNextPieces = [...prevState.nextPieces.slice(1), pieceGenerator.getNextPiece()];
       return {
         ...prevState,
         currentPiece: createTetromino(nextPiece),

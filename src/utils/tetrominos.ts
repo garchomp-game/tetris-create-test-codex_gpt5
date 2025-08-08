@@ -156,29 +156,15 @@ export const TETROMINO_COLORS: Record<TetrominoType, string> = {
   J: '#0000f0',
   L: '#f0a000'
 };
-
-const TETROMINO_TYPES: TetrominoType[] = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
-let bag: TetrominoType[] = [];
-
-function shuffle<T>(array: T[]): T[] {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-export function resetTetrominoBag() {
-  bag = [];
-}
-
-export function getRandomTetromino(): TetrominoType {
-  if (bag.length === 0) {
-    bag = shuffle(TETROMINO_TYPES);
-  }
-  return bag.pop()!;
-}
+export const TETROMINO_TYPES: TetrominoType[] = [
+  'I',
+  'O',
+  'T',
+  'S',
+  'Z',
+  'J',
+  'L'
+];
 
 export function createTetromino(type: TetrominoType, position: Position = { x: 4, y: 0 }): Tetromino {
   return {
