@@ -209,6 +209,7 @@ export function useGameLogic() {
       cancelAnimationFrame(gameLoopRef.current);
       gameLoopRef.current = null;
     }
+    dropTimeRef.current = 0;
   }, []);
 
   const startGame = useCallback(() => {
@@ -308,8 +309,6 @@ export function useGameLogic() {
           break;
         case 'p':
           togglePause();
-          break;
-        case 'r':
           break;
       }
     };
