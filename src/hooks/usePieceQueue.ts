@@ -1,6 +1,6 @@
 'use client';
 
-import { useReducer, useEffect, useCallback } from 'react';
+import { useReducer, useEffect, useCallback, useRef } from 'react';
 import { sevenBag } from '@/organisms/sevenBag';
 import { TetrominoType } from '@/types/tetris';
 
@@ -10,8 +10,7 @@ type State = {
 };
 
 type Action =
-  | { type: 'INIT'; preview: number }
-  | { type: 'CONSUME_ONE'; preview: number }
+  | { type: 'CONSUME_ONE'; preview: number; piece: TetrominoType }
   | { type: 'HARD_RESET'; preview: number };
 
 function fillQueue(q: TetrominoType[], need: number): TetrominoType[] {
@@ -20,24 +19,23 @@ function fillQueue(q: TetrominoType[], need: number): TetrominoType[] {
   return out;
 }
 
+function init(preview: number): State {
+  const current = sevenBag.next();
+  const queue = fillQueue([], preview);
+  return { current, queue };
+}
+
 function reducer(state: State, action: Action): State {
   const preview = action.preview;
   switch (action.type) {
-    case 'INIT': {
-      const current = sevenBag.next();
-      const queue = fillQueue([], preview);
-      return { current, queue };
-    }
     case 'CONSUME_ONE': {
-      const nextCurrent = state.queue[0] ?? sevenBag.next();
+      const nextCurrent = action.piece;
       const rest = state.queue.slice(1);
       const queue = fillQueue(rest, preview);
       return { current: nextCurrent, queue };
     }
     case 'HARD_RESET': {
-      const current = sevenBag.next();
-      const queue = fillQueue([], preview);
-      return { current, queue };
+      return init(preview);
     }
     default:
       return state;
@@ -45,19 +43,21 @@ function reducer(state: State, action: Action): State {
 }
 
 export function usePieceQueue(preview = 5) {
-  const [state, dispatch] = useReducer(reducer, {
-    current: 'I' as TetrominoType,
-    queue: [] as TetrominoType[],
-  });
+  const [state, dispatch] = useReducer(reducer, preview, init);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    dispatch({ type: 'INIT', preview });
+    if (initialized.current) {
+      dispatch({ type: 'HARD_RESET', preview });
+    } else {
+      initialized.current = true;
+    }
   }, [preview]);
 
   const spawnNext = useCallback((): TetrominoType => {
-    const nextCurrent = state.queue[0] ?? sevenBag.next();
-    dispatch({ type: 'CONSUME_ONE', preview });
-    return nextCurrent;
+    const piece = state.queue[0] ?? sevenBag.next();
+    dispatch({ type: 'CONSUME_ONE', preview, piece });
+    return piece;
   }, [state.queue, preview]);
 
   const hardReset = useCallback(() => {
