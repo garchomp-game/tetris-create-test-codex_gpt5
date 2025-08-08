@@ -3,7 +3,6 @@
 import React from 'react';
 import { TetrominoType } from '@/types/tetris';
 import { TETROMINO_SHAPES, TETROMINO_COLORS } from '@/utils/tetrominos';
-import Panel from '@/components/ui/Panel';
 
 interface TetrominoPreviewProps {
   type: TetrominoType | null;
@@ -86,44 +85,4 @@ const TetrominoPreview: React.FC<TetrominoPreviewProps> = ({
   );
 };
 
-interface NextPiecesProps {
-  nextPieces: TetrominoType[];
-}
-
-  export const NextPieces: React.FC<NextPiecesProps> = ({ nextPieces }) => {
-    return (
-      <Panel title="Next">
-        <div className="space-y-2">
-          {nextPieces.map((piece, index) => (
-            <TetrominoPreview
-              key={index}
-              type={piece}
-              title={`${index + 1}`}
-              small={index > 0}
-            />
-          ))}
-        </div>
-      </Panel>
-    );
-  };
-
-interface HoldPieceProps {
-  holdPiece: TetrominoType | null;
-  canHold: boolean;
-}
-
-  export const HoldPiece: React.FC<HoldPieceProps> = ({ holdPiece, canHold }) => {
-    return (
-      <Panel title="Hold" className={!canHold ? 'opacity-50' : ''}>
-        <TetrominoPreview
-          type={holdPiece}
-          title=""
-        />
-        {!canHold && (
-          <p className="text-xs text-secondary text-center mt-2">
-            Used
-          </p>
-        )}
-      </Panel>
-    );
-  };
+export default TetrominoPreview;

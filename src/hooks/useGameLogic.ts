@@ -1,12 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  GameState,
-  Tetromino,
-  TetrominoType,
-  NEXT_PIECES_COUNT,
-} from '@/types/tetris';
+import { useCallback, useEffect, useRef } from 'react';
+import { Tetromino, TetrominoType, NEXT_PIECES_COUNT } from '@/types/tetris';
 import {
   createInitialGameState,
   isValidPosition,
@@ -17,15 +12,15 @@ import {
   getDropSpeed,
 } from '@/utils/gameLogic';
 import { createTetromino, rotateTetromino } from '@/utils/tetrominos';
-import { usePieceQueue } from './usePieceQueue';
+  import { usePieceQueue } from './usePieceQueue';
+  import { useGameStore } from '@/store/game';
 
 export function useGameLogic() {
   const { current, nextQueue, spawnNext, hardReset } = usePieceQueue(
     NEXT_PIECES_COUNT
   );
-  const [gameState, setGameState] = useState<GameState>(() =>
-    createInitialGameState()
-  );
+    const gameState = useGameStore(state => state.gameState);
+    const setGameState = useGameStore(state => state.setGameState);
   const dropTimeRef = useRef(0);
   const gameLoopRef = useRef<number | null>(null);
 
@@ -52,7 +47,7 @@ export function useGameLogic() {
 
       return prevState;
     });
-  }, []);
+    }, [setGameState]);
 
   const rotatePiece = useCallback((clockwise: boolean = true) => {
     setGameState(prevState => {
@@ -71,7 +66,7 @@ export function useGameLogic() {
 
       return prevState;
     });
-  }, []);
+    }, [setGameState]);
 
   const hardDrop = useCallback(() => {
     if (!gameState.currentPiece || gameState.gameOver || gameState.paused) return;
@@ -116,7 +111,7 @@ export function useGameLogic() {
         gameOver,
       };
     });
-  }, [gameState.currentPiece, gameState.gameOver, gameState.paused, spawnNext]);
+    }, [gameState.currentPiece, gameState.gameOver, gameState.paused, spawnNext, setGameState]);
 
   const softDrop = useCallback(() => {
     movePiece(0, 1);
@@ -155,7 +150,7 @@ export function useGameLogic() {
         canHold: false,
       };
     });
-  }, [gameState, spawnNext]);
+    }, [gameState, spawnNext, setGameState]);
 
   const dropPiece = useCallback(() => {
     if (!gameState.currentPiece || gameState.gameOver || gameState.paused) return;
@@ -197,7 +192,7 @@ export function useGameLogic() {
         gameOver,
       };
     });
-  }, [gameState.currentPiece, gameState.gameOver, gameState.paused, spawnNext]);
+    }, [gameState.currentPiece, gameState.gameOver, gameState.paused, spawnNext, setGameState]);
 
   const resetGame = useCallback(() => {
     hardReset();
@@ -207,7 +202,7 @@ export function useGameLogic() {
       gameLoopRef.current = null;
     }
     dropTimeRef.current = 0;
-  }, [hardReset]);
+    }, [hardReset, setGameState]);
 
   const startGame = useCallback(() => {
     if (gameState.started) return;
@@ -220,14 +215,14 @@ export function useGameLogic() {
     }));
     spawnNext();
     dropTimeRef.current = Date.now();
-  }, [gameState.started, current, spawnNext]);
+    }, [gameState.started, current, spawnNext, setGameState]);
 
   const togglePause = useCallback(() => {
     setGameState(prevState => {
       if (!prevState.started || prevState.gameOver) return prevState;
       return { ...prevState, paused: !prevState.paused };
     });
-  }, []);
+    }, [setGameState]);
 
   useEffect(() => {
     if (!gameState.started) return;
@@ -319,5 +314,5 @@ export function useGameLogic() {
     gameState.started,
   ]);
 
-  return { gameState, nextPieces: nextQueue, resetGame, startGame, togglePause };
+    return { nextPieces: nextQueue, resetGame, startGame, togglePause };
 }
