@@ -45,35 +45,35 @@ const TetrisGame: React.FC = () => {
             </div>
             
             {/* Game controls */}
-              <div className="flex gap-4">
-                {!gameState.started ? (
+            <div className="flex gap-4">
+              {!gameState.started ? (
+                <button
+                  onClick={startGame}
+                  className="px-4 py-2 rounded text-white hover:brightness-110"
+                  style={{ backgroundColor: 'var(--color-success)' }}
+                >
+                  Start
+                </button>
+              ) : (
+                <>
                   <button
-                    onClick={startGame}
+                    onClick={togglePause}
+                    disabled={gameState.gameOver}
+                    className="px-4 py-2 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
+                    style={{ backgroundColor: 'var(--color-primary)' }}
+                  >
+                    {gameState.paused ? 'Resume' : 'Pause'}
+                  </button>
+                  <button
+                    onClick={handleNewGame}
                     className="px-4 py-2 rounded text-white hover:brightness-110"
                     style={{ backgroundColor: 'var(--color-success)' }}
                   >
-                    Start
+                    New Game
                   </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={togglePause}
-                      disabled={gameState.gameOver}
-                      className="px-4 py-2 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
-                      style={{ backgroundColor: 'var(--color-primary)' }}
-                    >
-                      {gameState.paused ? 'Resume' : 'Pause'}
-                    </button>
-                    <button
-                      onClick={handleNewGame}
-                      className="px-4 py-2 rounded text-white hover:brightness-110"
-                      style={{ backgroundColor: 'var(--color-success)' }}
-                    >
-                      New Game
-                    </button>
-                  </>
-                )}
-              </div>
+                </>
+              )}
+            </div>
           </div>
           
           {/* Right panel - Next pieces and Game info */}
