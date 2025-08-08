@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TetrominoType } from '@/types/tetris';
 import { TETROMINO_SHAPES, TETROMINO_COLORS } from '@/utils/tetrominos';
 
@@ -15,14 +15,22 @@ const TetrominoPreview: React.FC<TetrominoPreviewProps> = ({
   title, 
   small = false 
 }) => {
+  const [isHydrated, setIsHydrated] = useState(false);
+  
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   const blockSize = small ? 'w-3 h-3' : 'w-4 h-4';
   const containerSize = small ? 'w-16 h-12' : 'w-20 h-16';
 
   const renderPreview = () => {
-    if (!type) {
+    if (!isHydrated || !type) {
         return (
           <div className={`${containerSize} border border-[var(--color-panel-border)] bg-[var(--color-bg)] flex items-center justify-center`}>
-            <span className="text-secondary text-xs">Empty</span>
+            <span className="text-secondary text-xs">
+              {!isHydrated ? '...' : 'Empty'}
+            </span>
           </div>
         );
     }

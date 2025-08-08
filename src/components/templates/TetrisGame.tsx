@@ -13,13 +13,12 @@ import { useGameStore } from '@/store/game';
 import { useSettingsStore } from '@/store/settings';
 
 const TetrisGame: React.FC = () => {
-  const { nextPieces, resetGame, startGame, togglePause } = useGameLogic();
+  const { nextPieces, resetGame, restartGame, startGame, togglePause } = useGameLogic();
   const gameState = useGameStore(state => state.gameState);
   const showGhost = useSettingsStore(state => state.showGhost);
 
   const handleNewGame = () => {
-    resetGame();
-    startGame();
+    restartGame();
   };
 
   return (

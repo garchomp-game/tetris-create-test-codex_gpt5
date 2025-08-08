@@ -16,7 +16,7 @@ import { createTetromino, rotateTetromino } from '@/utils/tetrominos';
   import { useGameStore } from '@/store/game';
 
 export function useGameLogic() {
-  const { current, nextQueue, spawnNext, hardReset } = usePieceQueue(
+  const { current, nextQueue, spawnNext, hardReset, isHydrated } = usePieceQueue(
     NEXT_PIECES_COUNT
   );
     const gameState = useGameStore(state => state.gameState);
@@ -69,8 +69,9 @@ export function useGameLogic() {
     }, [setGameState]);
 
   const hardDrop = useCallback(() => {
-    if (!gameState.currentPiece || gameState.gameOver || gameState.paused) return;
+    if (!gameState.currentPiece || gameState.gameOver || gameState.paused || !isHydrated) return;
     const nextType = spawnNext();
+    if (!nextType) return;
     setGameState(prevState => {
       let dropDistance = 0;
       let testPiece = { ...prevState.currentPiece! };
@@ -122,11 +123,12 @@ export function useGameLogic() {
       !gameState.currentPiece ||
       !gameState.canHold ||
       gameState.gameOver ||
-      gameState.paused
+      gameState.paused ||
+      !isHydrated
     )
       return;
 
-    let replacement: TetrominoType | undefined;
+    let replacement: TetrominoType | null | undefined;
     if (!gameState.holdPiece) {
       replacement = spawnNext();
     }
@@ -139,7 +141,8 @@ export function useGameLogic() {
         newCurrentPiece = createTetromino(prevState.holdPiece);
         newHoldPiece = prevState.currentPiece!.type;
       } else {
-        newCurrentPiece = createTetromino(replacement!);
+        if (!replacement) return prevState;
+        newCurrentPiece = createTetromino(replacement);
         newHoldPiece = prevState.currentPiece!.type;
       }
 
@@ -171,6 +174,7 @@ export function useGameLogic() {
       }
 
       const nextType = spawnNext();
+      if (!nextType) return prevState;
       const newBoard = placeTetromino(prevState.board, prevState.currentPiece!);
       const { newBoard: clearedBoard, linesCleared } = clearLines(newBoard);
 
@@ -202,10 +206,27 @@ export function useGameLogic() {
       gameLoopRef.current = null;
     }
     dropTimeRef.current = 0;
-    }, [hardReset, setGameState]);
+  }, [hardReset, setGameState]);
+
+  const restartGame = useCallback(() => {
+    if (!isHydrated) return;
+    resetGame();
+    // hardReset後の新しいcurrentを取得するため、少し遅延して実行
+    setTimeout(() => {
+      if (!current) return;
+      setGameState(prevState => ({
+        ...prevState,
+        currentPiece: createTetromino(current),
+        started: true,
+        paused: false,
+        gameOver: false,
+      }));
+      dropTimeRef.current = Date.now();
+    }, 0);
+  }, [resetGame, current, setGameState, isHydrated]);
 
   const startGame = useCallback(() => {
-    if (gameState.started) return;
+    if (gameState.started || !isHydrated || !current) return;
     setGameState(prevState => ({
       ...prevState,
       currentPiece: createTetromino(current),
@@ -213,9 +234,8 @@ export function useGameLogic() {
       paused: false,
       gameOver: false,
     }));
-    spawnNext();
     dropTimeRef.current = Date.now();
-    }, [gameState.started, current, spawnNext, setGameState]);
+    }, [gameState.started, current, setGameState, isHydrated]);
 
   const togglePause = useCallback(() => {
     setGameState(prevState => {
@@ -252,8 +272,7 @@ export function useGameLogic() {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (gameState.gameOver) {
         if (event.key.toLowerCase() === 'r') {
-          resetGame();
-          startGame();
+          restartGame();
         }
         return;
       }
@@ -308,11 +327,11 @@ export function useGameLogic() {
     rotatePiece,
     holdPiece,
     togglePause,
-    resetGame,
+    restartGame,
     startGame,
     gameState.gameOver,
     gameState.started,
   ]);
 
-    return { nextPieces: nextQueue, resetGame, startGame, togglePause };
+    return { nextPieces: nextQueue, resetGame, restartGame, startGame, togglePause };
 }
