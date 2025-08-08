@@ -1,11 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { 
-  GameState, 
-  Tetromino, 
-  Position, 
-  TetrominoType 
+import {
+  GameState,
+  Tetromino,
+  TetrominoType
 } from '@/types/tetris';
 import {
   createInitialGameState,
@@ -24,8 +23,7 @@ import {
 
 export function useGameLogic() {
   const [gameState, setGameState] = useState<GameState>(() => createInitialGameState());
-  const [lastDropTime, setLastDropTime] = useState(Date.now());
-  const dropTimeRef = useRef(lastDropTime);
+  const dropTimeRef = useRef(0);
   const gameLoopRef = useRef<number | null>(null);
 
   const movePiece = useCallback((dx: number, dy: number) => {
@@ -207,18 +205,40 @@ export function useGameLogic() {
 
   const resetGame = useCallback(() => {
     setGameState(createInitialGameState());
-    setLastDropTime(Date.now());
+    if (gameLoopRef.current) {
+      cancelAnimationFrame(gameLoopRef.current);
+      gameLoopRef.current = null;
+    }
+    dropTimeRef.current = 0;
+  }, []);
+
+  const startGame = useCallback(() => {
+    setGameState(prevState => {
+      if (prevState.started) return prevState;
+      const nextPiece = prevState.nextPieces[0];
+      const newNextPieces = [...prevState.nextPieces.slice(1), getRandomTetromino()];
+      return {
+        ...prevState,
+        currentPiece: createTetromino(nextPiece),
+        nextPieces: newNextPieces,
+        started: true,
+        paused: false,
+        gameOver: false
+      };
+    });
+    dropTimeRef.current = Date.now();
   }, []);
 
   const togglePause = useCallback(() => {
-    setGameState(prevState => ({
-      ...prevState,
-      paused: !prevState.paused
-    }));
+    setGameState(prevState => {
+      if (!prevState.started || prevState.gameOver) return prevState;
+      return { ...prevState, paused: !prevState.paused };
+    });
   }, []);
 
   // Game loop
   useEffect(() => {
+    if (!gameState.started) return;
     const gameLoop = () => {
       const now = Date.now();
       const deltaTime = now - dropTimeRef.current;
@@ -239,12 +259,20 @@ export function useGameLogic() {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [gameState.level, gameState.paused, gameState.gameOver, dropPiece]);
+  }, [gameState.started, gameState.level, gameState.paused, gameState.gameOver, dropPiece]);
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (gameState.gameOver) return;
+      if (gameState.gameOver) {
+        if (event.key.toLowerCase() === 'r') {
+          resetGame();
+          startGame();
+        }
+        return;
+      }
+
+      if (!gameState.started) return;
 
       switch (event.key.toLowerCase()) {
         case 'a':
@@ -282,11 +310,6 @@ export function useGameLogic() {
         case 'p':
           togglePause();
           break;
-        case 'r':
-          if (gameState.gameOver) {
-            resetGame();
-          }
-          break;
       }
     };
 
@@ -298,14 +321,17 @@ export function useGameLogic() {
     hardDrop, 
     rotatePiece, 
     holdPiece, 
-    togglePause, 
-    resetGame, 
-    gameState.gameOver
+    togglePause,
+    resetGame,
+    startGame,
+    gameState.gameOver,
+    gameState.started
   ]);
 
   return {
     gameState,
     resetGame,
+    startGame,
     togglePause
   };
 }
