@@ -7,10 +7,13 @@ import GameInfo from '@/components/GameInfo';
 import Controls from '@/components/Controls';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { useSettingsStore } from '@/store/settings';
 
 const TetrisGame: React.FC = () => {
   const { gameState, nextPieces, resetGame, startGame, togglePause } =
     useGameLogic();
+  const showGhost = useSettingsStore(state => state.showGhost);
 
   const handleNewGame = () => {
     resetGame();
@@ -41,37 +44,27 @@ const TetrisGame: React.FC = () => {
               <TetrisBoard
                 board={gameState.board}
                 currentPiece={gameState.currentPiece}
-                showGhost={true}
+                showGhost={showGhost}
               />
             </div>
             
             {/* Game controls */}
             <div className="flex gap-4">
               {!gameState.started ? (
-                <button
-                  onClick={startGame}
-                  className="px-4 py-2 rounded text-white hover:brightness-110"
-                  style={{ backgroundColor: 'var(--color-success)' }}
-                >
+                <Button variant="primary" onClick={startGame}>
                   Start
-                </button>
+                </Button>
               ) : (
                 <>
-                  <button
+                  <Button
                     onClick={togglePause}
                     disabled={gameState.gameOver}
-                    className="px-4 py-2 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
-                    style={{ backgroundColor: 'var(--color-primary)' }}
                   >
                     {gameState.paused ? 'Resume' : 'Pause'}
-                  </button>
-                  <button
-                    onClick={handleNewGame}
-                    className="px-4 py-2 rounded text-white hover:brightness-110"
-                    style={{ backgroundColor: 'var(--color-success)' }}
-                  >
+                  </Button>
+                  <Button variant="primary" onClick={handleNewGame}>
                     New Game
-                  </button>
+                  </Button>
                 </>
               )}
             </div>

@@ -1,21 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
 
 const ThemeToggle: React.FC = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
   return (
-    <button
+    <Button
+      variant="outline"
+      size="sm"
       onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-      className="px-2 py-1 text-sm border rounded"
     >
       {theme === 'light' ? 'Dark mode' : 'Light mode'}
-    </button>
+    </Button>
   );
 };
 
