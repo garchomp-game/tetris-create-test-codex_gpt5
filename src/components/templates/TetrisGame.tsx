@@ -1,23 +1,24 @@
 'use client';
 
 import React from 'react';
-import TetrisBoard from '@/components/TetrisBoard';
-import { NextPieces, HoldPiece } from '@/components/TetrominoPreview';
-import GameInfo from '@/components/GameInfo';
-import Controls from '@/components/Controls';
+import TetrisBoard from '@/components/organisms/TetrisBoard';
+import NextPieces from '@/components/molecules/NextPieces';
+import HoldPiece from '@/components/molecules/HoldPiece';
+import GameInfo from '@/components/molecules/GameInfo';
+import Controls from '@/components/molecules/Controls';
+import ThemeToggle from '@/components/molecules/ThemeToggle';
+import { Button } from '@/components/atoms/Button';
 import { useGameLogic } from '@/hooks/useGameLogic';
-import ThemeToggle from '@/components/ui/ThemeToggle';
-import { Button } from '@/components/ui/button';
+import { useGameStore } from '@/store/game';
 import { useSettingsStore } from '@/store/settings';
 
 const TetrisGame: React.FC = () => {
-  const { gameState, nextPieces, resetGame, startGame, togglePause } =
-    useGameLogic();
+  const { nextPieces, resetGame, restartGame, startGame, togglePause } = useGameLogic();
+  const gameState = useGameStore(state => state.gameState);
   const showGhost = useSettingsStore(state => state.showGhost);
 
   const handleNewGame = () => {
-    resetGame();
-    startGame();
+    restartGame();
   };
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Panel from '@/components/ui/Panel';
+import Panel from '@/components/atoms/Panel';
 
 interface GameInfoProps {
   score: number;

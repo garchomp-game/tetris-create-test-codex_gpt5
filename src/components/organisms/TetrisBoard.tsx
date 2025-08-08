@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TetrominoType, Tetromino } from '@/types/tetris';
-import TetrisBlock from '@/components/TetrisBlock';
+import TetrisBlock from '@/components/atoms/TetrisBlock';
 
 interface TetrisBoardProps {
   board: (TetrominoType | null)[][];

@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TetrominoType } from '@/types/tetris';
 import { TETROMINO_SHAPES, TETROMINO_COLORS } from '@/utils/tetrominos';
-import Panel from '@/components/ui/Panel';
 
 interface TetrominoPreviewProps {
   type: TetrominoType | null;
@@ -16,14 +15,22 @@ const TetrominoPreview: React.FC<TetrominoPreviewProps> = ({
   title, 
   small = false 
 }) => {
+  const [isHydrated, setIsHydrated] = useState(false);
+  
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   const blockSize = small ? 'w-3 h-3' : 'w-4 h-4';
   const containerSize = small ? 'w-16 h-12' : 'w-20 h-16';
 
   const renderPreview = () => {
-    if (!type) {
+    if (!isHydrated || !type) {
         return (
           <div className={`${containerSize} border border-[var(--color-panel-border)] bg-[var(--color-bg)] flex items-center justify-center`}>
-            <span className="text-secondary text-xs">Empty</span>
+            <span className="text-secondary text-xs">
+              {!isHydrated ? '...' : 'Empty'}
+            </span>
           </div>
         );
     }
@@ -86,44 +93,4 @@ const TetrominoPreview: React.FC<TetrominoPreviewProps> = ({
   );
 };
 
-interface NextPiecesProps {
-  nextPieces: TetrominoType[];
-}
-
-  export const NextPieces: React.FC<NextPiecesProps> = ({ nextPieces }) => {
-    return (
-      <Panel title="Next">
-        <div className="space-y-2">
-          {nextPieces.map((piece, index) => (
-            <TetrominoPreview
-              key={index}
-              type={piece}
-              title={`${index + 1}`}
-              small={index > 0}
-            />
-          ))}
-        </div>
-      </Panel>
-    );
-  };
-
-interface HoldPieceProps {
-  holdPiece: TetrominoType | null;
-  canHold: boolean;
-}
-
-  export const HoldPiece: React.FC<HoldPieceProps> = ({ holdPiece, canHold }) => {
-    return (
-      <Panel title="Hold" className={!canHold ? 'opacity-50' : ''}>
-        <TetrominoPreview
-          type={holdPiece}
-          title=""
-        />
-        {!canHold && (
-          <p className="text-xs text-secondary text-center mt-2">
-            Used
-          </p>
-        )}
-      </Panel>
-    );
-  };
+export default TetrominoPreview;

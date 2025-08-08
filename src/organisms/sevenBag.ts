@@ -28,6 +28,11 @@ class SevenBag {
     if (this.bag.length === 0) this.refill();
     return this.bag.pop()!;
   }
+
+  reset() {
+    this.bag = [];
+    this.refill();
+  }
 }
 
 export const sevenBag = new SevenBag();

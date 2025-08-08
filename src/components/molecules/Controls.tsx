@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import Panel from '@/components/ui/Panel';
-import { Button } from '@/components/ui/button';
+import Panel from '@/components/atoms/Panel';
+import { Button } from '@/components/atoms/Button';
 import { useSettingsStore } from '@/store/settings';
 
 const Controls: React.FC = () => {

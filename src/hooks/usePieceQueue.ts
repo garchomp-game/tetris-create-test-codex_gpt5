@@ -1,12 +1,12 @@
 'use client';
 
-import { useReducer, useEffect, useCallback, useRef } from 'react';
+import { useReducer, useEffect, useCallback, useRef, useState } from 'react';
 import { sevenBag } from '@/organisms/sevenBag';
 import { TetrominoType } from '@/types/tetris';
 
 type State = {
   queue: TetrominoType[];
-  current: TetrominoType;
+  current: TetrominoType | null;
 };
 
 type Action =
@@ -20,9 +20,8 @@ function fillQueue(q: TetrominoType[], need: number): TetrominoType[] {
 }
 
 function init(preview: number): State {
-  const current = sevenBag.next();
-  const queue = fillQueue([], preview);
-  return { current, queue };
+  // SSRの問題を回避するため、初期状態はnullにする
+  return { current: null, queue: [] };
 }
 
 function reducer(state: State, action: Action): State {
@@ -35,7 +34,9 @@ function reducer(state: State, action: Action): State {
       return { current: nextCurrent, queue };
     }
     case 'HARD_RESET': {
-      return init(preview);
+      const current = sevenBag.next();
+      const queue = fillQueue([], preview);
+      return { current, queue };
     }
     default:
       return state;
@@ -44,30 +45,43 @@ function reducer(state: State, action: Action): State {
 
 export function usePieceQueue(preview = 5) {
   const [state, dispatch] = useReducer(reducer, preview, init);
+  const [isHydrated, setIsHydrated] = useState(false);
   const initialized = useRef(false);
 
+  // ハイドレーション完了後にピースを初期化
   useEffect(() => {
-    if (initialized.current) {
-      dispatch({ type: 'HARD_RESET', preview });
-    } else {
+    setIsHydrated(true);
+    if (!initialized.current) {
       initialized.current = true;
+      sevenBag.reset();
+      dispatch({ type: 'HARD_RESET', preview });
     }
   }, [preview]);
 
-  const spawnNext = useCallback((): TetrominoType => {
+  useEffect(() => {
+    if (initialized.current && isHydrated) {
+      dispatch({ type: 'HARD_RESET', preview });
+    }
+  }, [preview, isHydrated]);
+
+  const spawnNext = useCallback((): TetrominoType | null => {
+    if (!isHydrated || !state.current) return null;
     const piece = state.queue[0] ?? sevenBag.next();
     dispatch({ type: 'CONSUME_ONE', preview, piece });
     return piece;
-  }, [state.queue, preview]);
+  }, [state.queue, state.current, preview, isHydrated]);
 
   const hardReset = useCallback(() => {
+    if (!isHydrated) return;
+    sevenBag.reset();
     dispatch({ type: 'HARD_RESET', preview });
-  }, [preview]);
+  }, [preview, isHydrated]);
 
   return {
     current: state.current,
-    nextQueue: state.queue,
+    nextQueue: isHydrated ? state.queue : [],
     spawnNext,
     hardReset,
+    isHydrated,
   };
 }
