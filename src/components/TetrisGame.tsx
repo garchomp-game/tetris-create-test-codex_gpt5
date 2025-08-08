@@ -9,7 +9,13 @@ import { useGameLogic } from '@/hooks/useGameLogic';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
 const TetrisGame: React.FC = () => {
-  const { gameState, resetGame, togglePause } = useGameLogic();
+  const { gameState, nextPieces, resetGame, startGame, togglePause } =
+    useGameLogic();
+
+  const handleNewGame = () => {
+    resetGame();
+    startGame();
+  };
 
   return (
       <div className="min-h-screen p-4">
@@ -41,34 +47,46 @@ const TetrisGame: React.FC = () => {
             
             {/* Game controls */}
             <div className="flex gap-4">
-              <button
-                onClick={togglePause}
-                disabled={gameState.gameOver}
-                className="px-4 py-2 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
-                style={{ backgroundColor: 'var(--color-primary)' }}
-              >
-                {gameState.paused ? 'Resume' : 'Pause'}
-              </button>
-
-              <button
-                onClick={resetGame}
-                className="px-4 py-2 rounded text-white hover:brightness-110"
-                style={{ backgroundColor: 'var(--color-success)' }}
-              >
-                New Game
-              </button>
+              {!gameState.started ? (
+                <button
+                  onClick={startGame}
+                  className="px-4 py-2 rounded text-white hover:brightness-110"
+                  style={{ backgroundColor: 'var(--color-success)' }}
+                >
+                  Start
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={togglePause}
+                    disabled={gameState.gameOver}
+                    className="px-4 py-2 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
+                    style={{ backgroundColor: 'var(--color-primary)' }}
+                  >
+                    {gameState.paused ? 'Resume' : 'Pause'}
+                  </button>
+                  <button
+                    onClick={handleNewGame}
+                    className="px-4 py-2 rounded text-white hover:brightness-110"
+                    style={{ backgroundColor: 'var(--color-success)' }}
+                  >
+                    New Game
+                  </button>
+                </>
+              )}
             </div>
           </div>
           
           {/* Right panel - Next pieces and Game info */}
           <div className="space-y-4">
-            <NextPieces nextPieces={gameState.nextPieces} />
+            <NextPieces nextPieces={nextPieces} />
             <GameInfo
               score={gameState.score}
               level={gameState.level}
               lines={gameState.lines}
               gameOver={gameState.gameOver}
               paused={gameState.paused}
+              started={gameState.started}
             />
           </div>
         </div>

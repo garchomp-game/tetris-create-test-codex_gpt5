@@ -9,14 +9,16 @@ interface GameInfoProps {
   lines: number;
   gameOver: boolean;
   paused: boolean;
+  started: boolean;
 }
 
-const GameInfo: React.FC<GameInfoProps> = ({ 
-  score, 
-  level, 
-  lines, 
-  gameOver, 
-  paused 
+const GameInfo: React.FC<GameInfoProps> = ({
+  score,
+  level,
+  lines,
+  gameOver,
+  paused,
+  started
 }) => {
     return (
       <Panel title="Game Info">
@@ -36,8 +38,13 @@ const GameInfo: React.FC<GameInfoProps> = ({
             <span className="font-mono text-lg">{lines}</span>
           </div>
 
-          {(gameOver || paused) && (
+          {(!started || gameOver || paused) && (
             <div className="mt-4 pt-3 border-t border-[var(--color-panel-border)]">
+              {!started && !gameOver && !paused && (
+                <div className="text-center">
+                  <p className="text-sm text-secondary">Press Start to play</p>
+                </div>
+              )}
               {gameOver && (
                 <div className="text-center">
                   <p className="text-[var(--color-danger)] font-bold text-lg mb-2">Game Over!</p>

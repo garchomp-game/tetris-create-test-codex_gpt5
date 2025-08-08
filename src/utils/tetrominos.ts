@@ -156,11 +156,15 @@ export const TETROMINO_COLORS: Record<TetrominoType, string> = {
   J: '#0000f0',
   L: '#f0a000'
 };
-
-export function getRandomTetromino(): TetrominoType {
-  const types: TetrominoType[] = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
-  return types[Math.floor(Math.random() * types.length)];
-}
+export const TETROMINO_TYPES: TetrominoType[] = [
+  'I',
+  'O',
+  'T',
+  'S',
+  'Z',
+  'J',
+  'L'
+];
 
 export function createTetromino(type: TetrominoType, position: Position = { x: 4, y: 0 }): Tetromino {
   return {

@@ -15,7 +15,6 @@ export interface Tetromino {
 export interface GameState {
   board: (TetrominoType | null)[][];
   currentPiece: Tetromino | null;
-  nextPieces: TetrominoType[];
   holdPiece: TetrominoType | null;
   canHold: boolean;
   score: number;
@@ -23,6 +22,7 @@ export interface GameState {
   lines: number;
   gameOver: boolean;
   paused: boolean;
+  started: boolean;
 }
 
 export const BOARD_WIDTH = 10;
