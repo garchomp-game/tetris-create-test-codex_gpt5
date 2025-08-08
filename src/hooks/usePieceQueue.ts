@@ -11,7 +11,7 @@ type State = {
 
 type Action =
   | { type: 'INIT'; preview: number }
-  | { type: 'CONSUME_ONE'; preview: number }
+  | { type: 'CONSUME_ONE'; preview: number; piece: TetrominoType }
   | { type: 'HARD_RESET'; preview: number };
 
 function fillQueue(q: TetrominoType[], need: number): TetrominoType[] {
@@ -29,7 +29,7 @@ function reducer(state: State, action: Action): State {
       return { current, queue };
     }
     case 'CONSUME_ONE': {
-      const nextCurrent = state.queue[0] ?? sevenBag.next();
+      const nextCurrent = action.piece;
       const rest = state.queue.slice(1);
       const queue = fillQueue(rest, preview);
       return { current: nextCurrent, queue };
@@ -55,9 +55,9 @@ export function usePieceQueue(preview = 5) {
   }, [preview]);
 
   const spawnNext = useCallback((): TetrominoType => {
-    const nextCurrent = state.queue[0] ?? sevenBag.next();
-    dispatch({ type: 'CONSUME_ONE', preview });
-    return nextCurrent;
+    const piece = state.queue[0] ?? sevenBag.next();
+    dispatch({ type: 'CONSUME_ONE', preview, piece });
+    return piece;
   }, [state.queue, preview]);
 
   const hardReset = useCallback(() => {
