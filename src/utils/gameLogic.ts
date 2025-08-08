@@ -3,10 +3,8 @@ import {
   Tetromino,
   TetrominoType,
   BOARD_WIDTH,
-  BOARD_HEIGHT,
-  NEXT_PIECES_COUNT
+  BOARD_HEIGHT
 } from '@/types/tetris';
-import { pieceGenerator } from '@/organisms/PieceGenerator';
 
 export function createEmptyBoard(): (TetrominoType | null)[][] {
   return Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(null));
@@ -82,14 +80,6 @@ export function clearLines(board: (TetrominoType | null)[][]): {
   return { newBoard, linesCleared: fullLines.length };
 }
 
-export function generateNextPieces(): TetrominoType[] {
-  const pieces: TetrominoType[] = [];
-  for (let i = 0; i < NEXT_PIECES_COUNT; i++) {
-    pieces.push(pieceGenerator.getNextPiece());
-  }
-  return pieces;
-}
-
 export function calculateScore(linesCleared: number, level: number): number {
   const baseScore = [0, 40, 100, 300, 1200];
   return baseScore[linesCleared] * (level + 1);
@@ -104,11 +94,10 @@ export function getDropSpeed(level: number): number {
 }
 
 export function createInitialGameState(): GameState {
-  pieceGenerator.reset();
   return {
     board: createEmptyBoard(),
     currentPiece: null,
-    nextPieces: generateNextPieces(),
+    nextPieces: [],
     holdPiece: null,
     canHold: true,
     score: 0,

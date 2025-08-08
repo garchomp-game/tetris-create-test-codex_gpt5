@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   GameState,
   Tetromino,
-  TetrominoType
+  TetrominoType,
+  NEXT_PIECES_COUNT
 } from '@/types/tetris';
 import {
   createInitialGameState,
@@ -22,6 +23,19 @@ export function useGameLogic() {
   const [gameState, setGameState] = useState<GameState>(() => createInitialGameState());
   const dropTimeRef = useRef(0);
   const gameLoopRef = useRef<number | null>(null);
+
+  const generateNextPieces = useCallback((): TetrominoType[] => {
+    const pieces: TetrominoType[] = [];
+    for (let i = 0; i < NEXT_PIECES_COUNT; i++) {
+      pieces.push(pieceGenerator.getNextPiece());
+    }
+    return pieces;
+  }, []);
+
+  useEffect(() => {
+    pieceGenerator.reset();
+    setGameState(prev => ({ ...prev, nextPieces: generateNextPieces() }));
+  }, [generateNextPieces]);
 
   const movePiece = useCallback((dx: number, dy: number) => {
     setGameState(prevState => {
@@ -201,16 +215,17 @@ export function useGameLogic() {
   }, [gameState.currentPiece, gameState.gameOver, gameState.paused]);
 
   const resetGame = useCallback(() => {
-    setGameState(createInitialGameState());
+    pieceGenerator.reset();
+    setGameState({ ...createInitialGameState(), nextPieces: generateNextPieces() });
     if (gameLoopRef.current) {
       cancelAnimationFrame(gameLoopRef.current);
       gameLoopRef.current = null;
     }
     dropTimeRef.current = 0;
-  }, []);
+  }, [generateNextPieces]);
 
   const startGame = useCallback(() => {
-    if (gameState.started) return;
+    if (gameState.started || gameState.nextPieces.length === 0) return;
     const replacement = pieceGenerator.getNextPiece();
     setGameState(prevState => {
       const nextPiece = prevState.nextPieces[0];
@@ -225,7 +240,7 @@ export function useGameLogic() {
       };
     });
     dropTimeRef.current = Date.now();
-  }, [gameState.started]);
+  }, [gameState.started, gameState.nextPieces.length]);
 
   const togglePause = useCallback(() => {
     setGameState(prevState => {
