@@ -9,7 +9,8 @@ import { useGameLogic } from '@/hooks/useGameLogic';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
 const TetrisGame: React.FC = () => {
-  const { gameState, resetGame, startGame, togglePause } = useGameLogic();
+  const { gameState, nextPieces, resetGame, startGame, togglePause } =
+    useGameLogic();
 
   const handleNewGame = () => {
     resetGame();
@@ -78,7 +79,7 @@ const TetrisGame: React.FC = () => {
           
           {/* Right panel - Next pieces and Game info */}
           <div className="space-y-4">
-            <NextPieces nextPieces={gameState.nextPieces} />
+            <NextPieces nextPieces={nextPieces} />
             <GameInfo
               score={gameState.score}
               level={gameState.level}

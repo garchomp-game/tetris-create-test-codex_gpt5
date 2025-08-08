@@ -97,7 +97,6 @@ export function createInitialGameState(): GameState {
   return {
     board: createEmptyBoard(),
     currentPiece: null,
-    nextPieces: [],
     holdPiece: null,
     canHold: true,
     score: 0,
