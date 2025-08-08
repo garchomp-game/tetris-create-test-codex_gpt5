@@ -13,7 +13,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      data-theme="light"
+      style={{ colorScheme: "light" }}
+      suppressHydrationWarning
+    >
       <body className="antialiased">
         <ThemeProvider attribute="data-theme" defaultTheme="light">
           {children}
