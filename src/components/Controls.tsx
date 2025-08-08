@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Panel from '@/components/ui/Panel';
 
 const Controls: React.FC = () => {
   const controls = [
@@ -15,22 +16,20 @@ const Controls: React.FC = () => {
     { key: 'R', action: 'Restart (when game over)' },
   ];
 
-  return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <h2 className="text-lg font-bold mb-3 text-center">Controls</h2>
-      
-      <div className="space-y-2">
-        {controls.map(({ key, action }, index) => (
-          <div key={index} className="flex justify-between items-center text-sm">
-            <span className="font-mono bg-gray-100 px-2 py-1 rounded border">
-              {key}
-            </span>
-            <span className="text-gray-700">{action}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+    return (
+      <Panel title="Controls">
+        <div className="space-y-2">
+          {controls.map(({ key, action }, index) => (
+            <div key={index} className="flex justify-between items-center text-sm">
+              <span className="font-mono bg-[var(--color-bg)] px-2 py-1 rounded border border-[var(--color-panel-border)]">
+                {key}
+              </span>
+              <span className="text-secondary">{action}</span>
+            </div>
+          ))}
+        </div>
+      </Panel>
+    );
 };
 
 export default Controls;
