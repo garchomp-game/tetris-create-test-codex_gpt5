@@ -1,6 +1,7 @@
 import React from 'react';
 import { TetrominoType } from '@/types/tetris';
 import { TETROMINO_COLORS } from '@/utils/tetrominos';
+import { motion } from 'framer-motion';
 
 interface TetrisBlockProps {
   type: TetrominoType | null;
@@ -28,7 +29,10 @@ const TetrisBlock: React.FC<TetrisBlockProps> = ({ type, ghost }) => {
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.1 }}
       className={`w-6 h-6 ${getBlockStyle()}`}
       style={{
         backgroundColor: type ? getBlockColor() : undefined
