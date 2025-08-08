@@ -68,13 +68,11 @@ export function useGameLogic() {
   }, []);
 
   const hardDrop = useCallback(() => {
+    if (!gameState.currentPiece || gameState.gameOver || gameState.paused) return;
+    const replacement = pieceGenerator.getNextPiece();
     setGameState(prevState => {
-      if (!prevState.currentPiece || prevState.gameOver || prevState.paused) {
-        return prevState;
-      }
-
       let dropDistance = 0;
-      let testPiece = { ...prevState.currentPiece };
+      let testPiece = { ...prevState.currentPiece! };
 
       while (true) {
         const nextPosition = {
@@ -98,7 +96,7 @@ export function useGameLogic() {
       const newScore = prevState.score + calculateScore(linesCleared, newLevel) + dropDistance * 2;
 
       const nextPiece = prevState.nextPieces[0];
-      const newNextPieces = [...prevState.nextPieces.slice(1), pieceGenerator.getNextPiece()];
+      const newNextPieces = [...prevState.nextPieces.slice(1), replacement];
       const newCurrentPiece = createTetromino(nextPiece);
 
       const gameOver = !isValidPosition(clearedBoard, newCurrentPiece);
@@ -115,30 +113,34 @@ export function useGameLogic() {
         gameOver
       };
     });
-  }, []);
+  }, [gameState.currentPiece, gameState.gameOver, gameState.paused]);
 
   const softDrop = useCallback(() => {
     movePiece(0, 1);
   }, [movePiece]);
 
   const holdPiece = useCallback(() => {
+    if (
+      !gameState.currentPiece ||
+      !gameState.canHold ||
+      gameState.gameOver ||
+      gameState.paused
+    )
+      return;
+    const replacement = gameState.holdPiece ? null : pieceGenerator.getNextPiece();
     setGameState(prevState => {
-      if (!prevState.currentPiece || !prevState.canHold || prevState.gameOver || prevState.paused) {
-        return prevState;
-      }
-
       let newCurrentPiece: Tetromino;
       let newHoldPiece: TetrominoType;
       let newNextPieces = prevState.nextPieces;
 
       if (prevState.holdPiece) {
         newCurrentPiece = createTetromino(prevState.holdPiece);
-        newHoldPiece = prevState.currentPiece.type;
+        newHoldPiece = prevState.currentPiece!.type;
       } else {
         const nextPiece = prevState.nextPieces[0];
         newCurrentPiece = createTetromino(nextPiece);
-        newNextPieces = [...prevState.nextPieces.slice(1), pieceGenerator.getNextPiece()];
-        newHoldPiece = prevState.currentPiece.type;
+        newNextPieces = [...prevState.nextPieces.slice(1), replacement!];
+        newHoldPiece = prevState.currentPiece!.type;
       }
 
       return {
@@ -149,19 +151,17 @@ export function useGameLogic() {
         canHold: false
       };
     });
-  }, []);
+  }, [gameState]);
 
   const dropPiece = useCallback(() => {
+    if (!gameState.currentPiece || gameState.gameOver || gameState.paused) return;
+    const replacement = pieceGenerator.getNextPiece();
     setGameState(prevState => {
-      if (!prevState.currentPiece || prevState.gameOver || prevState.paused) {
-        return prevState;
-      }
-
       const newPiece = {
-        ...prevState.currentPiece,
+        ...prevState.currentPiece!,
         position: {
-          x: prevState.currentPiece.position.x,
-          y: prevState.currentPiece.position.y + 1
+          x: prevState.currentPiece!.position.x,
+          y: prevState.currentPiece!.position.y + 1
         }
       };
 
@@ -173,15 +173,15 @@ export function useGameLogic() {
       }
 
       // Place the piece
-      const newBoard = placeTetromino(prevState.board, prevState.currentPiece);
+      const newBoard = placeTetromino(prevState.board, prevState.currentPiece!);
       const { newBoard: clearedBoard, linesCleared } = clearLines(newBoard);
-      
+
       const newLines = prevState.lines + linesCleared;
       const newLevel = calculateLevel(newLines);
       const newScore = prevState.score + calculateScore(linesCleared, newLevel);
 
       const nextPiece = prevState.nextPieces[0];
-      const newNextPieces = [...prevState.nextPieces.slice(1), pieceGenerator.getNextPiece()];
+      const newNextPieces = [...prevState.nextPieces.slice(1), replacement];
       const newCurrentPiece = createTetromino(nextPiece);
 
       const gameOver = !isValidPosition(clearedBoard, newCurrentPiece);
@@ -198,7 +198,7 @@ export function useGameLogic() {
         gameOver
       };
     });
-  }, []);
+  }, [gameState.currentPiece, gameState.gameOver, gameState.paused]);
 
   const resetGame = useCallback(() => {
     setGameState(createInitialGameState());
@@ -210,10 +210,11 @@ export function useGameLogic() {
   }, []);
 
   const startGame = useCallback(() => {
+    if (gameState.started) return;
+    const replacement = pieceGenerator.getNextPiece();
     setGameState(prevState => {
-      if (prevState.started) return prevState;
       const nextPiece = prevState.nextPieces[0];
-      const newNextPieces = [...prevState.nextPieces.slice(1), pieceGenerator.getNextPiece()];
+      const newNextPieces = [...prevState.nextPieces.slice(1), replacement];
       return {
         ...prevState,
         currentPiece: createTetromino(nextPiece),
@@ -224,7 +225,7 @@ export function useGameLogic() {
       };
     });
     dropTimeRef.current = Date.now();
-  }, []);
+  }, [gameState.started]);
 
   const togglePause = useCallback(() => {
     setGameState(prevState => {
