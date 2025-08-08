@@ -1,11 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { 
-  GameState, 
-  Tetromino, 
-  Position, 
-  TetrominoType 
+import {
+  GameState,
+  Tetromino,
+  TetrominoType
 } from '@/types/tetris';
 import {
   createInitialGameState,
@@ -23,10 +22,9 @@ import {
 } from '@/utils/tetrominos';
 
 export function useGameLogic() {
-  const [gameState, setGameState] = useState<GameState>(() => createInitialGameState());
-  const [lastDropTime, setLastDropTime] = useState(Date.now());
-  const dropTimeRef = useRef(lastDropTime);
-  const gameLoopRef = useRef<number | null>(null);
+    const [gameState, setGameState] = useState<GameState>(() => createInitialGameState());
+    const dropTimeRef = useRef(Date.now());
+    const gameLoopRef = useRef<number | null>(null);
 
   const movePiece = useCallback((dx: number, dy: number) => {
     setGameState(prevState => {
@@ -205,10 +203,10 @@ export function useGameLogic() {
     });
   }, []);
 
-  const resetGame = useCallback(() => {
-    setGameState(createInitialGameState());
-    setLastDropTime(Date.now());
-  }, []);
+    const resetGame = useCallback(() => {
+      setGameState(createInitialGameState());
+      dropTimeRef.current = Date.now();
+    }, []);
 
   const togglePause = useCallback(() => {
     setGameState(prevState => ({

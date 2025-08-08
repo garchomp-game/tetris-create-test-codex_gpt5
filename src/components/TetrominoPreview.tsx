@@ -3,6 +3,7 @@
 import React from 'react';
 import { TetrominoType } from '@/types/tetris';
 import { TETROMINO_SHAPES, TETROMINO_COLORS } from '@/utils/tetrominos';
+import Panel from '@/components/ui/Panel';
 
 interface TetrominoPreviewProps {
   type: TetrominoType | null;
@@ -20,11 +21,11 @@ const TetrominoPreview: React.FC<TetrominoPreviewProps> = ({
 
   const renderPreview = () => {
     if (!type) {
-      return (
-        <div className={`${containerSize} border border-gray-300 bg-gray-100 flex items-center justify-center`}>
-          <span className="text-gray-400 text-xs">Empty</span>
-        </div>
-      );
+        return (
+          <div className={`${containerSize} border border-[var(--color-panel-border)] bg-[var(--color-bg)] flex items-center justify-center`}>
+            <span className="text-secondary text-xs">Empty</span>
+          </div>
+        );
     }
 
     const shape = TETROMINO_SHAPES[type][0];
@@ -47,7 +48,7 @@ const TetrominoPreview: React.FC<TetrominoPreviewProps> = ({
     const height = maxY - minY + 1;
 
     return (
-      <div className={`${containerSize} border border-gray-300 bg-gray-900 flex items-center justify-center p-1`}>
+        <div className={`${containerSize} border border-[var(--board-border)] bg-[var(--board-bg)] flex items-center justify-center p-1`}>
         <div 
           className="grid gap-0"
           style={{ 
@@ -64,7 +65,7 @@ const TetrominoPreview: React.FC<TetrominoPreviewProps> = ({
               return (
                 <div
                   key={`${x}-${y}`}
-                  className={`${blockSize} ${hasBlock ? 'border border-gray-400' : ''}`}
+                    className={`${blockSize} ${hasBlock ? 'border border-[var(--board-border)]' : ''}`}
                   style={{
                     backgroundColor: hasBlock ? color : 'transparent'
                   }}
@@ -78,8 +79,8 @@ const TetrominoPreview: React.FC<TetrominoPreviewProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center mb-2">
-      <h3 className="text-sm font-semibold mb-1 text-gray-700">{title}</h3>
+      <div className="flex flex-col items-center mb-2">
+        <h3 className="text-sm font-semibold mb-1 text-secondary">{title}</h3>
       {renderPreview()}
     </div>
   );
@@ -89,42 +90,40 @@ interface NextPiecesProps {
   nextPieces: TetrominoType[];
 }
 
-export const NextPieces: React.FC<NextPiecesProps> = ({ nextPieces }) => {
-  return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <h2 className="text-lg font-bold mb-3 text-center">Next</h2>
-      <div className="space-y-2">
-        {nextPieces.map((piece, index) => (
-          <TetrominoPreview
-            key={index}
-            type={piece}
-            title={`${index + 1}`}
-            small={index > 0}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
+  export const NextPieces: React.FC<NextPiecesProps> = ({ nextPieces }) => {
+    return (
+      <Panel title="Next">
+        <div className="space-y-2">
+          {nextPieces.map((piece, index) => (
+            <TetrominoPreview
+              key={index}
+              type={piece}
+              title={`${index + 1}`}
+              small={index > 0}
+            />
+          ))}
+        </div>
+      </Panel>
+    );
+  };
 
 interface HoldPieceProps {
   holdPiece: TetrominoType | null;
   canHold: boolean;
 }
 
-export const HoldPiece: React.FC<HoldPieceProps> = ({ holdPiece, canHold }) => {
-  return (
-    <div className={`bg-white p-4 rounded-lg shadow-md ${!canHold ? 'opacity-50' : ''}`}>
-      <h2 className="text-lg font-bold mb-3 text-center">Hold</h2>
-      <TetrominoPreview
-        type={holdPiece}
-        title=""
-      />
-      {!canHold && (
-        <p className="text-xs text-gray-500 text-center mt-2">
-          Used
-        </p>
-      )}
-    </div>
-  );
-};
+  export const HoldPiece: React.FC<HoldPieceProps> = ({ holdPiece, canHold }) => {
+    return (
+      <Panel title="Hold" className={!canHold ? 'opacity-50' : ''}>
+        <TetrominoPreview
+          type={holdPiece}
+          title=""
+        />
+        {!canHold && (
+          <p className="text-xs text-secondary text-center mt-2">
+            Used
+          </p>
+        )}
+      </Panel>
+    );
+  };
