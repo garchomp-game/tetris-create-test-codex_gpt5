@@ -23,6 +23,7 @@ export interface GameState {
   lines: number;
   gameOver: boolean;
   paused: boolean;
+  started: boolean;
 }
 
 export const BOARD_WIDTH = 10;

@@ -6,7 +6,7 @@ import {
   BOARD_HEIGHT, 
   NEXT_PIECES_COUNT 
 } from '@/types/tetris';
-import { createTetromino, getRandomTetromino } from '@/utils/tetrominos';
+import { getRandomTetromino } from '@/utils/tetrominos';
 
 export function createEmptyBoard(): (TetrominoType | null)[][] {
   return Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(null));
@@ -104,20 +104,17 @@ export function getDropSpeed(level: number): number {
 }
 
 export function createInitialGameState(): GameState {
-  const nextPieces = generateNextPieces();
-  const firstPiece = nextPieces.shift()!;
-  nextPieces.push(getRandomTetromino());
-
   return {
     board: createEmptyBoard(),
-    currentPiece: createTetromino(firstPiece),
-    nextPieces,
+    currentPiece: null,
+    nextPieces: generateNextPieces(),
     holdPiece: null,
     canHold: true,
     score: 0,
     level: 0,
     lines: 0,
     gameOver: false,
-    paused: false
+    paused: false,
+    started: false
   };
 }
