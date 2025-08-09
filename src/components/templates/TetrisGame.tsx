@@ -13,7 +13,7 @@ import { useGameStore } from '@/store/game';
 import { useSettingsStore } from '@/store/settings';
 
 const TetrisGame: React.FC = () => {
-  const { nextPieces, resetGame, restartGame, startGame, togglePause } = useGameLogic();
+  const { restartGame, startGame, togglePause } = useGameLogic();
   const gameState = useGameStore(state => state.gameState);
   const showGhost = useSettingsStore(state => state.showGhost);
 
@@ -73,7 +73,7 @@ const TetrisGame: React.FC = () => {
           
           {/* Right panel - Next pieces and Game info */}
           <div className="space-y-4">
-            <NextPieces nextPieces={nextPieces} />
+            <NextPieces />
             <GameInfo
               score={gameState.score}
               level={gameState.level}

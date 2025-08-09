@@ -11,8 +11,7 @@ graph TD
   App --> Controls[操作パネル]
   App --> Theme[テーマ切替]
   App --> Logic[useGameLogic]
-  Logic --> Queue[usePieceQueue]
-  Logic --> Stores[GameStore / SettingsStore]
+  Logic --> Stores[GameStore / SettingsStore / PieceStore]
 ```
 
 ## モジュール構造
@@ -24,8 +23,8 @@ src/
     molecules/      # コントロールや情報パネルなどの複合UI
     organisms/      # ゲームボードなどの高レベルUI
     templates/      # ページレベルの構成 (TetrisGame)
-  hooks/            # ゲームロジックとピースキュー用のフック
-  store/            # ゲーム状態と設定を管理する Zustand ストア
+  hooks/            # ゲームロジックなどのフック
+  store/            # ゲーム状態・設定・ピースキューを管理する Zustand ストア
   utils/            # ゲームロジックのヘルパーとテトロミノ定義
   types/            # 共通の TypeScript 型
   lib/              # 汎用的なユーティリティ関数
@@ -35,7 +34,7 @@ src/
 ## ピース生成（7ミノ1巡方式）
 SevenBag クラスはテトロミノ7種類を1巡として袋に詰め、Fisher-Yates シャッフルで順序をランダム化する。袋が空になると自動的に再補充され、すべての種類が公平に出現する。
 
-`usePieceQueue` フックは SevenBag を利用し、プレビュー数ぶんのキューを常に維持する。`spawnNext` でキュー先頭を消費し、新しいピースを補充する。`hardReset` は SevenBag をリセットして新しい巡を開始する。
+PieceStore は SevenBag を利用し、プレビュー数ぶんのキューを常に維持する。`spawnNext` でキュー先頭を消費し、新しいピースを補充する。`reset` は SevenBag をリセットして新しい巡を開始する。
 
 ### クラス図
 ```mermaid
@@ -46,26 +45,26 @@ classDiagram
     +next(): TetrominoType
     +reset(): void
   }
-  class UsePieceQueue {
+  class PieceStore {
     +current: TetrominoType
-    +nextQueue: TetrominoType[]
+    +queue: TetrominoType[]
     +spawnNext(): TetrominoType
-    +hardReset(): void
+    +reset(): void
   }
-  UsePieceQueue --> SevenBag : next()
+  PieceStore --> SevenBag : next()
 ```
 
 ### シーケンス図
 ```mermaid
 sequenceDiagram
-  participant Queue as usePieceQueue
+  participant Store as PieceStore
   participant Bag as SevenBag
-  Queue->>Bag: next()
-  Bag-->>Queue: ピース
+  Store->>Bag: next()
+  Bag-->>Store: ピース
   alt バッグが空
     Bag->>Bag: refill(7種シャッフル)
   end
-  Queue->>Queue: キュー更新
+  Store->>Store: キュー更新
 ```
 
 ## クラス図
