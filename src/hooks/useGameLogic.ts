@@ -12,15 +12,25 @@ import {
   getDropSpeed,
 } from '@/utils/gameLogic';
 import { createTetromino, rotateTetromino } from '@/utils/tetrominos';
-  import { usePieceQueue } from './usePieceQueue';
-  import { useGameStore } from '@/store/game';
+import { usePieceStore } from '@/store/pieceQueue';
+import { useGameStore } from '@/store/game';
+import { useShallow } from 'zustand/react/shallow';
 
 export function useGameLogic() {
-  const { current, nextQueue, spawnNext, hardReset, isHydrated } = usePieceQueue(
-    NEXT_PIECES_COUNT
+  const { spawnNext, reset, initialized } = usePieceStore(
+    useShallow(state => ({
+      spawnNext: state.spawnNext,
+      reset: state.reset,
+      initialized: state.initialized,
+    })),
   );
-    const gameState = useGameStore(state => state.gameState);
-    const setGameState = useGameStore(state => state.setGameState);
+  const gameState = useGameStore(state => state.gameState);
+  const setGameState = useGameStore(state => state.setGameState);
+  useEffect(() => {
+    if (!initialized) {
+      reset(NEXT_PIECES_COUNT);
+    }
+  }, [initialized, reset]);
   const dropTimeRef = useRef(0);
   const gameLoopRef = useRef<number | null>(null);
 
@@ -69,7 +79,7 @@ export function useGameLogic() {
     }, [setGameState]);
 
   const hardDrop = useCallback(() => {
-    if (!gameState.currentPiece || gameState.gameOver || gameState.paused || !isHydrated) return;
+    if (!gameState.currentPiece || gameState.gameOver || gameState.paused || !initialized) return;
     const nextType = spawnNext();
     if (!nextType) return;
     setGameState(prevState => {
@@ -112,7 +122,7 @@ export function useGameLogic() {
         gameOver,
       };
     });
-    }, [gameState.currentPiece, gameState.gameOver, gameState.paused, spawnNext, setGameState]);
+    }, [gameState.currentPiece, gameState.gameOver, gameState.paused, spawnNext, setGameState, initialized]);
 
   const softDrop = useCallback(() => {
     movePiece(0, 1);
@@ -124,7 +134,7 @@ export function useGameLogic() {
       !gameState.canHold ||
       gameState.gameOver ||
       gameState.paused ||
-      !isHydrated
+      !initialized
     )
       return;
 
@@ -153,10 +163,20 @@ export function useGameLogic() {
         canHold: false,
       };
     });
-    }, [gameState, spawnNext, setGameState]);
+  }, [
+    gameState.currentPiece,
+    gameState.canHold,
+    gameState.gameOver,
+    gameState.paused,
+    gameState.holdPiece,
+    spawnNext,
+    setGameState,
+    initialized,
+  ]);
 
   const dropPiece = useCallback(() => {
-    if (!gameState.currentPiece || gameState.gameOver || gameState.paused) return;
+    if (!gameState.currentPiece || gameState.gameOver || gameState.paused || !initialized)
+      return;
     setGameState(prevState => {
       const newPiece = {
         ...prevState.currentPiece!,
@@ -196,46 +216,56 @@ export function useGameLogic() {
         gameOver,
       };
     });
-    }, [gameState.currentPiece, gameState.gameOver, gameState.paused, spawnNext, setGameState]);
+  }, [
+    gameState.currentPiece,
+    gameState.gameOver,
+    gameState.paused,
+    spawnNext,
+    setGameState,
+    initialized,
+  ]);
 
   const resetGame = useCallback(() => {
-    hardReset();
+    reset(NEXT_PIECES_COUNT);
     setGameState(createInitialGameState());
     if (gameLoopRef.current) {
       cancelAnimationFrame(gameLoopRef.current);
       gameLoopRef.current = null;
     }
     dropTimeRef.current = 0;
-  }, [hardReset, setGameState]);
+  }, [reset, setGameState]);
 
   const restartGame = useCallback(() => {
-    if (!isHydrated) return;
+    if (!initialized) return;
     resetGame();
-    // hardReset後の新しいcurrentを取得するため、少し遅延して実行
-    setTimeout(() => {
-      if (!current) return;
-      setGameState(prevState => ({
-        ...prevState,
-        currentPiece: createTetromino(current),
-        started: true,
-        paused: false,
-        gameOver: false,
-      }));
-      dropTimeRef.current = Date.now();
-    }, 0);
-  }, [resetGame, current, setGameState, isHydrated]);
-
-  const startGame = useCallback(() => {
-    if (gameState.started || !isHydrated || !current) return;
+    const curr = usePieceStore.getState().current;
+    if (!curr) return;
     setGameState(prevState => ({
       ...prevState,
-      currentPiece: createTetromino(current),
+      currentPiece: createTetromino(curr),
       started: true,
       paused: false,
       gameOver: false,
     }));
     dropTimeRef.current = Date.now();
-    }, [gameState.started, current, setGameState, isHydrated]);
+  }, [resetGame, setGameState, initialized]);
+
+  const startGame = useCallback(() => {
+    if (gameState.started) return;
+    if (!initialized) {
+      reset(NEXT_PIECES_COUNT);
+    }
+    const curr = usePieceStore.getState().current;
+    if (!curr) return;
+    setGameState(prevState => ({
+      ...prevState,
+      currentPiece: createTetromino(curr),
+      started: true,
+      paused: false,
+      gameOver: false,
+    }));
+    dropTimeRef.current = Date.now();
+  }, [gameState.started, setGameState, initialized, reset]);
 
   const togglePause = useCallback(() => {
     setGameState(prevState => {
@@ -333,5 +363,5 @@ export function useGameLogic() {
     gameState.started,
   ]);
 
-    return { nextPieces: nextQueue, resetGame, restartGame, startGame, togglePause };
+  return { restartGame, startGame, togglePause };
 }
