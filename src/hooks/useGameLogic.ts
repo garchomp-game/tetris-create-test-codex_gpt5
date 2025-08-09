@@ -163,10 +163,20 @@ export function useGameLogic() {
         canHold: false,
       };
     });
-    }, [gameState, spawnNext, setGameState, initialized]);
+  }, [
+    gameState.currentPiece,
+    gameState.canHold,
+    gameState.gameOver,
+    gameState.paused,
+    gameState.holdPiece,
+    spawnNext,
+    setGameState,
+    initialized,
+  ]);
 
   const dropPiece = useCallback(() => {
-    if (!gameState.currentPiece || gameState.gameOver || gameState.paused) return;
+    if (!gameState.currentPiece || gameState.gameOver || gameState.paused || !initialized)
+      return;
     setGameState(prevState => {
       const newPiece = {
         ...prevState.currentPiece!,
@@ -206,10 +216,17 @@ export function useGameLogic() {
         gameOver,
       };
     });
-    }, [gameState.currentPiece, gameState.gameOver, gameState.paused, spawnNext, setGameState]);
+  }, [
+    gameState.currentPiece,
+    gameState.gameOver,
+    gameState.paused,
+    spawnNext,
+    setGameState,
+    initialized,
+  ]);
 
   const resetGame = useCallback(() => {
-    reset();
+    reset(NEXT_PIECES_COUNT);
     setGameState(createInitialGameState());
     if (gameLoopRef.current) {
       cancelAnimationFrame(gameLoopRef.current);
@@ -234,7 +251,10 @@ export function useGameLogic() {
   }, [resetGame, setGameState, initialized]);
 
   const startGame = useCallback(() => {
-    if (gameState.started || !initialized) return;
+    if (gameState.started) return;
+    if (!initialized) {
+      reset(NEXT_PIECES_COUNT);
+    }
     const curr = usePieceStore.getState().current;
     if (!curr) return;
     setGameState(prevState => ({
@@ -245,7 +265,7 @@ export function useGameLogic() {
       gameOver: false,
     }));
     dropTimeRef.current = Date.now();
-  }, [gameState.started, setGameState, initialized]);
+  }, [gameState.started, setGameState, initialized, reset]);
 
   const togglePause = useCallback(() => {
     setGameState(prevState => {
@@ -343,5 +363,5 @@ export function useGameLogic() {
     gameState.started,
   ]);
 
-  return { resetGame, restartGame, startGame, togglePause };
+  return { restartGame, startGame, togglePause };
 }

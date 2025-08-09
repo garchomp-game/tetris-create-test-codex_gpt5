@@ -12,8 +12,8 @@ const NextPieces: React.FC = () => {
       <div className="space-y-2">
         {nextPieces.map((piece, index) => (
           <TetrominoPreview
-            key={index}
-            type={piece}
+            key={piece.id}
+            type={piece.type}
             title={`${index + 1}`}
             small={index > 0}
           />
