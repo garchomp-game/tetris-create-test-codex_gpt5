@@ -14,9 +14,16 @@ import {
 import { createTetromino, rotateTetromino } from '@/utils/tetrominos';
 import { usePieceStore } from '@/store/pieceQueue';
 import { useGameStore } from '@/store/game';
+import { useShallow } from 'zustand/react/shallow';
 
 export function useGameLogic() {
-  const { spawnNext, reset, initialized } = usePieceStore();
+  const { spawnNext, reset, initialized } = usePieceStore(
+    useShallow(state => ({
+      spawnNext: state.spawnNext,
+      reset: state.reset,
+      initialized: state.initialized,
+    })),
+  );
   const gameState = useGameStore(state => state.gameState);
   const setGameState = useGameStore(state => state.setGameState);
   useEffect(() => {
@@ -214,19 +221,16 @@ export function useGameLogic() {
   const restartGame = useCallback(() => {
     if (!initialized) return;
     resetGame();
-    // After reset, get new current piece type
-    setTimeout(() => {
-      const curr = usePieceStore.getState().current;
-      if (!curr) return;
-      setGameState(prevState => ({
-        ...prevState,
-        currentPiece: createTetromino(curr),
-        started: true,
-        paused: false,
-        gameOver: false,
-      }));
-      dropTimeRef.current = Date.now();
-    }, 0);
+    const curr = usePieceStore.getState().current;
+    if (!curr) return;
+    setGameState(prevState => ({
+      ...prevState,
+      currentPiece: createTetromino(curr),
+      started: true,
+      paused: false,
+      gameOver: false,
+    }));
+    dropTimeRef.current = Date.now();
   }, [resetGame, setGameState, initialized]);
 
   const startGame = useCallback(() => {
