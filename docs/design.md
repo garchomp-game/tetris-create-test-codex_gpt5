@@ -1,82 +1,83 @@
-# Design Document
+# 設計書
 
-## System Architecture
+## システム構成
 ```mermaid
 graph TD
-  User --> App[TetrisGame]
-  App --> Board[TetrisBoard]
-  App --> Hold[HoldPiece]
-  App --> Next[NextPieces]
-  App --> Info[GameInfo]
-  App --> Controls[Controls]
-  App --> Theme[ThemeToggle]
+  User[ユーザー] --> App[TetrisGame]
+  App --> Board[テトリスボード]
+  App --> Hold[ホールドピース]
+  App --> Next[ネクストピース]
+  App --> Info[ゲーム情報]
+  App --> Controls[操作パネル]
+  App --> Theme[テーマ切替]
   App --> Logic[useGameLogic]
   Logic --> Queue[usePieceQueue]
-  Logic --> Stores[GameStore/SettingsStore]
+  Logic --> Stores[GameStore / SettingsStore]
 ```
 
-## Module Structure
+## モジュール構造
 ```
 src/
-  app/              # Next.js layout and entry page
+  app/              # Next.js のレイアウトとエントリページ
   components/
-    atoms/          # Basic UI elements (buttons, blocks)
-    molecules/      # Composed UI pieces (controls, info panels)
-    organisms/      # Higher-level UI such as the game board
-    templates/      # Page-level composition (TetrisGame)
-  hooks/            # Game logic and piece queue hooks
-  store/            # Zustand stores for game state and settings
-  utils/            # Game logic helpers and tetromino definitions
-  types/            # Shared TypeScript types
-  organisms/        # Non-visual logic like SevenBag
+    atoms/          # ボタン・ブロックなどの基本UI要素
+    molecules/      # コントロールや情報パネルなどの複合UI
+    organisms/      # ゲームボードなどの高レベルUI
+    templates/      # ページレベルの構成 (TetrisGame)
+  hooks/            # ゲームロジックとピースキュー用のフック
+  store/            # ゲーム状態と設定を管理する Zustand ストア
+  utils/            # ゲームロジックのヘルパーとテトロミノ定義
+  types/            # 共通の TypeScript 型
+  lib/              # 汎用的なユーティリティ関数
+  organisms/        # SevenBag などの非視覚ロジック
 ```
 
-## Class Diagram
+## クラス図
 ```mermaid
 classDiagram
   class Position {
-    number x
-    number y
+    x: number
+    y: number
   }
   class Tetromino {
-    TetrominoType type
-    number[][] shape
-    Position position
-    number rotation
+    type: TetrominoType
+    shape: number[][]
+    position: Position
+    rotation: number
   }
   class GameState {
-    (TetrominoType|null)[][] board
-    Tetromino? currentPiece
-    TetrominoType? holdPiece
-    boolean canHold
-    number score
-    number level
-    number lines
-    boolean gameOver
-    boolean paused
-    boolean started
+    board: TetrominoType[][]
+    currentPiece: Tetromino
+    holdPiece: TetrominoType
+    canHold: boolean
+    score: number
+    level: number
+    lines: number
+    gameOver: boolean
+    paused: boolean
+    started: boolean
   }
   GameState --> Tetromino
   Tetromino --> Position
 ```
 
-## Sequence Diagram
-Example: player performs a hard drop.
+## シーケンス図
+例: プレイヤーがハードドロップを実行する。
 ```mermaid
 sequenceDiagram
-  participant U as User
+  participant U as ユーザー
   participant GL as useGameLogic
   participant GS as GameStore
   participant B as TetrisBoard
-  U->>GL: Space key
+  U->>GL: スペースキー
   GL->>GS: placeTetromino()
-  GL->>GS: update score/level
-  GS-->>B: board state
-  B-->>U: updated render
+  GL->>GS: スコア/レベル更新
+  GS-->>B: ボード状態
+  B-->>U: 画面更新
 ```
 
-## Database Design
-No external database is used. All state is kept in memory via Zustand stores.
+## データベース設計
+外部データベースは使用せず、状態はすべて Zustand ストアでメモリ管理する。
 
-## API Specification
-The application does not expose HTTP APIs. All interactions occur within the browser through React components and Zustand state.
+## API仕様
+HTTP API は提供せず、すべての操作はブラウザ内の React コンポーネントと Zustand 状態を通じて行われる。
